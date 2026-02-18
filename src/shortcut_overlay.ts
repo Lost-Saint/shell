@@ -1,146 +1,146 @@
-import GObject from 'gi://GObject';
-import St from 'gi://St';
+import GObject from "gi://GObject";
+import St from "gi://St";
 
-import * as Lib from './lib.js';
+import * as Lib from "./lib.js";
 
 const { separator } = Lib;
 
 export class Shortcut {
-    description: string;
-    bindings: Array<Array<string>>;
+  description: string;
+  bindings: Array<Array<string>>;
 
-    constructor(description: string) {
-        this.description = description;
-        this.bindings = new Array();
-    }
+  constructor(description: string) {
+    this.description = description;
+    this.bindings = new Array();
+  }
 
-    add(binding: Array<string>) {
-        this.bindings.push(binding);
-        return this;
-    }
+  add(binding: Array<string>) {
+    this.bindings.push(binding);
+    return this;
+  }
 }
 
 export class Section {
-    header: string;
-    shortcuts: Array<Shortcut>;
+  header: string;
+  shortcuts: Array<Shortcut>;
 
-    constructor(header: string, shortcuts: Array<Shortcut>) {
-        this.header = header;
-        this.shortcuts = shortcuts;
-    }
+  constructor(header: string, shortcuts: Array<Shortcut>) {
+    this.header = header;
+    this.shortcuts = shortcuts;
+  }
 }
 
 export class Column {
-    sections: Array<Section>;
+  sections: Array<Section>;
 
-    constructor(sections: Array<Section>) {
-        this.sections = sections;
-    }
+  constructor(sections: Array<Section>) {
+    this.sections = sections;
+  }
 }
 
 export var ShortcutOverlay = GObject.registerClass(
-    class ShortcutOverlay extends St.BoxLayout {
-        title: string;
-        columns: Array<Column>;
+  class ShortcutOverlay extends St.BoxLayout {
+    title: string;
+    columns: Array<Column>;
 
-        constructor() {
-            super();
-            this.title = '';
-            this.columns = new Array();
+    constructor() {
+      super();
+      this.title = "";
+      this.columns = new Array();
+    }
+
+    _init(title: string, columns: Array<Column>) {
+      super.init({
+        styleClass: "pop-shell-shortcuts",
+        destroyOnClose: false,
+        shellReactive: true,
+        shouldFadeIn: true,
+        shouldFadeOut: true,
+      });
+
+      let columns_layout = new St.BoxLayout({
+        styleClass: "pop-shell-shortcuts-columns",
+        horizontal: true,
+      });
+
+      for (const column of columns) {
+        let column_layout = new St.BoxLayout({
+          styleClass: "pop-shell-shortcuts-column",
+        });
+
+        for (const section of column.sections) {
+          column_layout.add(this.gen_section(section));
         }
 
-        _init(title: string, columns: Array<Column>) {
-            super.init({
-                styleClass: 'pop-shell-shortcuts',
-                destroyOnClose: false,
-                shellReactive: true,
-                shouldFadeIn: true,
-                shouldFadeOut: true,
-            });
+        columns_layout.add(column_layout);
+      }
 
-            let columns_layout = new St.BoxLayout({
-                styleClass: 'pop-shell-shortcuts-columns',
-                horizontal: true,
-            });
+      this.add(
+        new St.Label({
+          styleClass: "pop-shell-shortcuts-title",
+          text: title,
+        }),
+      );
 
-            for (const column of columns) {
-                let column_layout = new St.BoxLayout({
-                    styleClass: 'pop-shell-shortcuts-column',
-                });
+      this.add(columns_layout);
 
-                for (const section of column.sections) {
-                    column_layout.add(this.gen_section(section));
-                }
+      // TODO: Add hyperlink for shortcuts in settings
+    }
 
-                columns_layout.add(column_layout);
-            }
+    gen_combination(combination: Array<string>) {
+      let layout = new St.BoxLayout({
+        styleClass: "pop-shell-binding",
+        horizontal: true,
+      });
 
-            this.add(
-                new St.Label({
-                    styleClass: 'pop-shell-shortcuts-title',
-                    text: title,
-                }),
-            );
+      for (const key of combination) {
+        layout.add(St.Label({ text: key }));
+      }
 
-            this.add(columns_layout);
+      return layout;
+    }
 
-            // TODO: Add hyperlink for shortcuts in settings
-        }
+    gen_section(section: Section) {
+      let layout = new St.BoxLayout({
+        styleclass: "pop-shell-section",
+      });
 
-        gen_combination(combination: Array<string>) {
-            let layout = new St.BoxLayout({
-                styleClass: 'pop-shell-binding',
-                horizontal: true,
-            });
+      layout.add(
+        new St.Label({
+          styleClass: "pop-shell-section-header",
+          text: section.header,
+        }),
+      );
 
-            for (const key of combination) {
-                layout.add(St.Label({ text: key }));
-            }
+      for (const subsection of section.shortcuts) {
+        layout.add(separator());
+        layout.add(this.gen_shortcut(subsection));
+      }
 
-            return layout;
-        }
+      return layout;
+    }
 
-        gen_section(section: Section) {
-            let layout = new St.BoxLayout({
-                styleclass: 'pop-shell-section',
-            });
+    gen_shortcut(shortcut: Shortcut) {
+      let layout = new St.BoxLayout({
+        styleClass: "pop-shell-shortcut",
+        horizontal: true,
+      });
 
-            layout.add(
-                new St.Label({
-                    styleClass: 'pop-shell-section-header',
-                    text: section.header,
-                }),
-            );
+      layout.add(
+        new St.Label({
+          text: shortcut.description,
+        }),
+      );
 
-            for (const subsection of section.shortcuts) {
-                layout.add(separator());
-                layout.add(this.gen_shortcut(subsection));
-            }
+      // for (const binding of shortcut.bindings) {
+      //     join(
+      //         binding.values(),
+      //         (comb) => layout.add(this.gen_combination(comb)),
+      //         () => layout.add(new St.Label({ text: 'or' }))
+      //     );
+      // }
 
-            return layout;
-        }
-
-        gen_shortcut(shortcut: Shortcut) {
-            let layout = new St.BoxLayout({
-                styleClass: 'pop-shell-shortcut',
-                horizontal: true,
-            });
-
-            layout.add(
-                new St.Label({
-                    text: shortcut.description,
-                }),
-            );
-
-            // for (const binding of shortcut.bindings) {
-            //     join(
-            //         binding.values(),
-            //         (comb) => layout.add(this.gen_combination(comb)),
-            //         () => layout.add(new St.Label({ text: 'or' }))
-            //     );
-            // }
-
-            return layout;
-        }
-    },
+      return layout;
+    }
+  },
 );

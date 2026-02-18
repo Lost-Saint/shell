@@ -1,13 +1,13 @@
 export class OnceCell<T> {
-    value: T | undefined;
+  value: T | undefined;
 
-    constructor() {}
+  constructor() {}
 
-    get_or_init(callback: () => T): T {
-        if (this.value === undefined) {
-            this.value = callback();
-        }
-
-        return this.value;
+  get_or_init(callback: () => T): T {
+    if (this.value === undefined) {
+      this.value = callback();
     }
+
+    return this.value;
+  }
 }

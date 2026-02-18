@@ -1,24 +1,20 @@
 {
-    "version": "1.2.0",
-    "compileOnSave": true,
-    "compilerOptions": {
-        "target": "es2020",
-        "strict": true,
-        "outDir": "./target",
-        "forceConsistentCasingInFileNames": true,
-        "downlevelIteration": true,
-        "lib": [
-            "es2020"
-        ],
-        "pretty": true,
-        "removeComments": true,
-        "incremental": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "moduleResolution": "NodeNext",
-        "module": "NodeNext"
-    },
-    "include": [
-        "src/*.ts"
-    ]
+  "version": "1.2.0",
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "ES2022",
+    "strict": true,
+    "outDir": "./target",
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
+    "lib": ["ES2022"],
+    "pretty": true,
+    "removeComments": true,
+    "incremental": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+  },
+  "include": ["src/*.ts"],
 }
