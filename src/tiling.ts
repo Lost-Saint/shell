@@ -10,7 +10,7 @@ import * as geom from "./geom.js";
 import * as exec from "./executor.js";
 
 import type { Entity } from "./ecs.js";
-import type { Rectangle } from "./rectangle.js";
+import { Rectangle } from "./rectangle.js";
 import type { Ext } from "./extension.js";
 import type { NodeStack } from "./node.js";
 import { AutoTiler } from "./auto_tiler.js";
@@ -1032,22 +1032,21 @@ function move_window_or_monitor(
   };
 }
 
-function tile_monitors(rect: Rectangle): Array<Rectangle> {
-  let total_size = (a: Rectangle, b: Rectangle): number =>
+function tile_monitors(rect: Rectangle): Rectangle[] {
+  const total_size = (a: Rectangle, b: Rectangle): number =>
     a.width * a.height - b.width * b.height;
 
-  let workspace = global.workspace_manager.get_active_workspace();
+  const workspace = global.workspace_manager.get_active_workspace();
+
   return Main.layoutManager.monitors
-    .map((_monitor: Rectangle, i: number) =>
-      workspace.get_work_area_for_monitor(i),
-    )
-    .filter((monitor: Rectangle) => {
-      return (
-        rect.x + rect.width > monitor.x &&
-        rect.y + rect.height > monitor.y &&
-        rect.x < monitor.x + monitor.width &&
-        rect.y < monitor.y + monitor.height
-      );
+    .map((_, i: number) => {
+      const area = workspace.get_work_area_for_monitor(i);
+      if (!area) return null;
+
+      const monitorRect = Rectangle.from_meta(area);
+
+      return rect.intersects(monitorRect) ? monitorRect : null;
     })
+    .filter((monitor): monitor is Rectangle => monitor !== null)
     .sort(total_size);
 }

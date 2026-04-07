@@ -1,4 +1,28 @@
-/** Hop slot arena allocator */
+/**
+ * A "hop slot" arena allocator that manages a pool of typed objects
+ * with O(1) insert and remove via index-stable slots.
+ *
+ * ## Why use this?
+ * Standard arrays shift indices on removal (O(n)). Maps have hash overhead.
+ * This arena holds items in fixed slots and recycles freed indices, giving
+ * stable numeric handles (useful for ECS, scene graphs, object pools).
+ *
+ * ## How it works
+ * - `slots[]` is a sparse array: live items or `null` tombstones.
+ * - `unused[]` is a stack of freed indices to hand out before growing.
+ * - `_size` tracks live-item count separately (avoids filtering on every read).
+ *
+ * @template T - The object type stored in the arena. Must be non-null object.
+ *
+ * @example
+ * ```ts
+ * const arena = new Arena<{ name: string }>();
+ * const id = arena.insert({ name: "Alice" }); // id = 0
+ * arena.get(id);                              // { name: "Alice" }
+ * arena.remove(id);                           // { name: "Alice" }
+ * arena.get(id);                              // null
+ * ```
+ */
 export class Arena<T extends object> {
   private slots: Array<null | T> = [];
   private unused: Array<number> = [];
